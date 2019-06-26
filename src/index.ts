@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/logs/create', async (req, res) => {
   debugRequest(debugLogs, req);
 
-  const { createdBy, type, action, oldData, content, objectId, objectName } = req.body;
+  const { createdBy, type, action, oldData, newData, objectId, unicode } = req.body;
 
   try {
     await Logs.createLog({
@@ -38,9 +38,9 @@ app.post('/logs/create', async (req, res) => {
       type,
       action,
       oldData,
-      content,
+      newData,
       objectId,
-      objectName,
+      unicode,
       createdAt: new Date(),
     });
 

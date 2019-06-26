@@ -1,5 +1,5 @@
 import { Document, model, Model, Schema } from 'mongoose';
-import { field } from './utils';
+import { field, getChangedFields } from '../utils';
 
 export interface ILog {
   createdAt: Date;
@@ -7,9 +7,9 @@ export interface ILog {
   type: string;
   action: string;
   oldData?: string;
-  content: string;
+  newData?: string;
   objectId: string;
-  objectName?: string;
+  unicode?: string;
 }
 
 export interface ILogDocument extends ILog, Document {}
@@ -18,32 +18,47 @@ export interface ILogModel extends Model<ILogDocument> {
   createLog(doc: ILog): Promise<ILogDocument>;
 }
 
+/**
+ * When oldData field is empty, it means all fields have been changed.
+ */
 export const schema = new Schema({
   _id: field({ pkey: true }),
   createdAt: field({
     type: Date,
-    label: 'Бүртгэсэн огноо',
+    label: 'Created date',
     default: new Date(),
   }),
-  createdBy: field({ type: String, label: 'Үйлдэл хийсэн user id' }),
+  createdBy: field({ type: String, label: 'Performer of the action' }),
   type: field({
     type: String,
-    label: 'Ажилласан модуль',
+    label: 'Module name which has been changed',
   }),
   action: field({
     type: String,
-    label: 'Хийсэн үйлдэл',
+    label: 'Action, one of (create|update|delete)',
   }),
-  oldData: field({ type: String, label: 'Өөрчлөгдөөгүй талбарууд', optional: true }),
-  content: field({ type: String, label: 'Өөрчлөгдсөн талбарууд' }),
-  objectId: field({ type: String, label: 'Ажилласан мөрийн id' }),
-  objectName: field({ type: String, label: 'Ажилласан зүйлийн нэр' }),
+  oldData: field({ type: String, label: 'Unchanged field names', optional: true }),
+  newData: field({ type: String, label: 'Changed field names', optional: true }),
+  objectId: field({ type: String, label: 'Collection row id' }),
+  unicode: field({ type: String, label: 'Description' }),
 });
 
 export const loadLogClass = () => {
   class Log {
     public static createLog(doc: ILog) {
-      return Logs.create(doc);
+      const { oldData, newData } = doc;
+      const logDoc = {
+        ...doc,
+      };
+
+      if (doc.action === 'update' && oldData && newData) {
+        const comparison = getChangedFields(JSON.parse(oldData), JSON.parse(newData));
+
+        logDoc.oldData = JSON.stringify(comparison.unchanged);
+        logDoc.newData = JSON.stringify(comparison.changed);
+      }
+
+      return Logs.create(logDoc);
     }
   }
 
