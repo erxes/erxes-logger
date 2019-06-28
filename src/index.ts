@@ -64,6 +64,10 @@ app.get('/logs', async (req, res) => {
   // filter by date
   if (start && end) {
     filter.createdAt = { $gte: new Date(start), $lte: new Date(end) };
+  } else if (start) {
+    filter.createdAt = { $gte: new Date(start) };
+  } else if (end) {
+    filter.createdAt = { $lte: new Date(end) };
   }
 
   // filter by user
