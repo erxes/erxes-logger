@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/logs/create', async (req, res) => {
   debugRequest(debugLogs, req);
 
-  const { createdBy, type, action, oldData, newData, objectId, unicode } = req.body;
+  const { createdBy, type, action, oldData, newData, objectId, unicode, description } = req.body;
 
   try {
     await Logs.createLog({
@@ -42,9 +42,52 @@ app.post('/logs/create', async (req, res) => {
       objectId,
       unicode,
       createdAt: new Date(),
+      description,
     });
 
     return res.json({ status: 'ok' });
+  } catch (e) {
+    return res.status(500).send(e.message);
+  }
+});
+
+// sends logs according to specified filter
+app.get('/logs', async (req, res) => {
+  interface IFilter {
+    createdAt?: any;
+    createdBy?: string;
+    action?: string;
+  }
+  const { start, end, userId, action, page, perPage } = req.body;
+  const filter: IFilter = {};
+
+  // filter by date
+  if (start && end) {
+    filter.createdAt = { $gte: new Date(start), $lte: new Date(end) };
+  }
+
+  // filter by user
+  if (userId) {
+    filter.createdBy = userId;
+  }
+
+  // filter by actions
+  if (action) {
+    filter.action = action;
+  }
+
+  const _page = Number(page || '1');
+  const _limit = Number(perPage || '20');
+
+  try {
+    const logs = await Logs.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(_limit)
+      .skip((_page - 1) * _limit);
+
+    const logsCount = await Logs.countDocuments(filter);
+
+    return res.json({ logs, totalCount: logsCount });
   } catch (e) {
     return res.status(500).send(e.message);
   }
