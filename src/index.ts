@@ -30,7 +30,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/logs/create', async (req, res) => {
   debugRequest(debugLogs, req);
 
-  const { createdBy, type, action, oldData, newData, objectId, unicode, description } = req.body;
+  const params = JSON.parse(req.body.params);
+  const { createdBy, type, action, oldData, newData, objectId, unicode, description } = params;
 
   try {
     await Logs.createLog({
@@ -58,7 +59,9 @@ app.get('/logs', async (req, res) => {
     createdBy?: string;
     action?: string;
   }
-  const { start, end, userId, action, page, perPage } = req.body;
+
+  const params = JSON.parse(req.body.params);
+  const { start, end, userId, action, page, perPage } = params;
   const filter: IFilter = {};
 
   // filter by date
