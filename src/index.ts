@@ -31,16 +31,15 @@ app.post('/logs/create', async (req, res) => {
   debugRequest(debugLogs, req);
 
   const params = JSON.parse(req.body.params);
-  const { createdBy, type, action, oldData, newData, objectId, unicode, description } = params;
+  const { createdBy, type, action, unicode, description, object, newData } = params;
 
   try {
     await Logs.createLog({
       createdBy,
       type,
       action,
-      oldData,
+      object,
       newData,
-      objectId,
       unicode,
       createdAt: new Date(),
       description,

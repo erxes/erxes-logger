@@ -1,22 +1,23 @@
 import { Document, model, Model, Schema } from 'mongoose';
 import { field, getChangedFields } from '../utils';
 
-export interface ILog {
+export interface ILogDoc {
   createdAt: Date;
   createdBy: string;
   type: string;
   action: string;
-  oldData?: string;
-  newData?: string;
-  objectId: string;
+  object?: string;
   unicode?: string;
   description?: string;
+  newData?: string;
+  oldData?: string;
+  objectId?: string;
 }
 
-export interface ILogDocument extends ILog, Document {}
+export interface ILogDocument extends ILogDoc, Document {}
 
 export interface ILogModel extends Model<ILogDocument> {
-  createLog(doc: ILog): Promise<ILogDocument>;
+  createLog(doc: ILogDoc): Promise<ILogDocument>;
 }
 
 export const schema = new Schema({
@@ -35,8 +36,8 @@ export const schema = new Schema({
     type: String,
     label: 'Action, one of (create|update|delete)',
   }),
-  oldData: field({ type: String, label: 'Unchanged field names', optional: true }),
-  newData: field({ type: String, label: 'Changed field names', optional: true }),
+  oldData: field({ type: String, label: 'Unchanged fields', optional: true }),
+  newData: field({ type: String, label: 'Changed fields', optional: true }),
   objectId: field({ type: String, label: 'Collection row id' }),
   unicode: field({ type: String, label: 'Performer username' }),
   description: field({ type: String, label: 'Description' }),
@@ -44,15 +45,30 @@ export const schema = new Schema({
 
 export const loadLogClass = () => {
   class Log {
-    public static createLog(doc: ILog) {
-      const { oldData, newData } = doc;
+    public static createLog(doc: ILogDoc) {
+      const { object, newData } = doc;
+      const oldData = JSON.parse(object);
       const logDoc = { ...doc };
 
-      if (doc.action === 'update' && oldData && newData) {
-        const comparison = getChangedFields(JSON.parse(oldData), JSON.parse(newData));
+      if (oldData._id) {
+        logDoc.objectId = oldData._id;
+      }
 
-        logDoc.oldData = JSON.stringify(comparison.unchanged);
-        logDoc.newData = JSON.stringify(comparison.changed);
+      switch (doc.action) {
+        case 'update':
+          if (oldData && newData) {
+            const comparison = getChangedFields(oldData, JSON.parse(newData));
+
+            logDoc.oldData = JSON.stringify(comparison.unchanged);
+            logDoc.newData = JSON.stringify(comparison.changed);
+          }
+
+          break;
+        case 'delete':
+          logDoc.oldData = JSON.stringify(oldData);
+          break;
+        default:
+          break;
       }
 
       return Logs.create(logDoc);
