@@ -14,7 +14,6 @@
     "graphql",
     "apollo"
   ],
-  "author": "Buyantogtokh <buyantogtokh.s@nmma.co>",
   "license": "MIT",
   "scripts": {
     "start": "node dist",
@@ -23,7 +22,8 @@
     "build": "tsc -p tsconfig.prod.json",
     "lint": "tslint 'src/**/*.ts'",
     "format": "prettier --write 'src/**/*.ts'",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "release": "release-it"
   },
   "lint-staged": {
     "*.ts": [
@@ -41,6 +41,7 @@
     "requestify": "^0.2.5"
   },
   "devDependencies": {
+    "@release-it/conventional-changelog": "^1.1.0",
     "@types/body-parser": "^1.17.0",
     "@types/cors": "^2.8.4",
     "@types/dotenv": "^4.0.3",
@@ -55,6 +56,7 @@
     "jest": "22.0.4",
     "lint-staged": "^3.6.0",
     "prettier": "^1.13.7",
+    "release-it": "^12.3.2",
     "ts-jest": "22.0.4",
     "ts-node": "^7.0.0",
     "ts-node-dev": "^1.0.0-pre.32",
