@@ -19,7 +19,7 @@ pipeline:
       event:
         - push
 
-  build_github_release_assets:
+  build_tag:
     image: node:10.16.0-slim
     commands:
       - yarn build
@@ -44,7 +44,6 @@ pipeline:
           - "refs/tags/*rc*"
           - "refs/tags/*alpha*"
           - "refs/tags/*beta*"
-    # draft: true
 
   github_release:
     image: plugins/github-release
@@ -63,7 +62,6 @@ pipeline:
           - "refs/tags/*rc*"
           - "refs/tags/*alpha*"
           - "refs/tags/*beta*"
-    # draft: true
 
   docker_publish:
     image: plugins/docker
