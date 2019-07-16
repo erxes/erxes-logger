@@ -99,6 +99,11 @@ app.get('/logs', async (req, res) => {
   }
 });
 
+// for health checking
+app.get('/status', async (_req, res) => {
+  res.end('ok');
+});
+
 // Error handling middleware
 app.use((error, _req, res, _next) => {
   console.error(error.stack);
