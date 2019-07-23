@@ -1,5 +1,5 @@
 import { Document, model, Model, Schema } from 'mongoose';
-import { field, getChangedFields } from '../utils';
+import { compareObjects, field } from '../utils';
 
 export interface ILogDoc {
   createdAt: Date;
@@ -57,7 +57,7 @@ export const loadLogClass = () => {
       switch (doc.action) {
         case 'update':
           if (oldData && newData) {
-            const comparison = getChangedFields(oldData, JSON.parse(newData));
+            const comparison = compareObjects(oldData, JSON.parse(newData));
 
             logDoc.oldData = JSON.stringify(comparison.unchanged);
             logDoc.newData = JSON.stringify(comparison.changed);
