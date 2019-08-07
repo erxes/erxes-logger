@@ -28,96 +28,170 @@ export const field = options => {
  * @todo Add object array comparison part
  */
 const compareArrays = (oldArray: any[] = [], newArray: any[] = []) => {
-  const changed = [];
-  const unchanged = [];
+  const changedItems = [];
+  const unchangedItems = [];
+  const addedItems = [];
+  const removedItems = [];
 
   for (const elem of oldArray) {
     if (typeof elem !== 'object') {
       const found = newArray.find(el => el === elem);
 
-      if (found && elem === found) {
-        unchanged.push(elem);
-      } else {
-        changed.push(elem);
+      if (!found) {
+        removedItems.push(elem);
       }
     }
   }
 
-  for (const elem of newArray) {
+  newArray.forEach((elem, index) => {
+    // primary data types
     if (typeof elem !== 'object') {
       const found = oldArray.find(el => el === elem);
 
-      if (found && elem === found) {
-        unchanged.push(elem);
+      if (found) {
+        unchangedItems.push(elem);
       } else {
-        changed.push(elem);
+        addedItems.push(elem);
       }
     }
-  }
+
+    if (typeof elem === 'object') {
+      const comparison = compareObjects(oldArray[index], newArray[index]);
+      const { unchanged, changed, added, removed } = comparison;
+
+      if (changed && !isObjectEmpty(changed)) {
+        changedItems.push(changed);
+      }
+
+      if (added && !isObjectEmpty(added)) {
+        addedItems.push(added);
+      }
+
+      if (removed && !isObjectEmpty(removed)) {
+        removedItems.push(removed);
+      }
+
+      if (unchanged && !isObjectEmpty(unchanged)) {
+        unchangedItems.push(unchanged);
+      }
+    }
+  });
 
   return {
-    unchanged,
-    changed,
+    unchanged: unchangedItems,
+    changed: changedItems,
+    added: addedItems,
+    removed: removedItems,
   };
 };
 
 /**
- * Detects changes between two objects
+ * Shorthand empty value checker
+ * @param val Value to check
+ */
+const isNull = val => val === null || val === undefined || val === '';
+
+/**
+ * Shorthand empty object checker
+ * @param obj Object to check
+ */
+const isObjectEmpty = obj => {
+  return typeof obj === 'object' && obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+};
+
+/**
+ * Detects changes between two objects.
+ * Input objects MUST have same hierarchical level of attributes.
  * @param oldData Actual data in db
  * @param newData Doc to be changed
  * @returns Object specifying changed & unchanged fields
  */
-export const compareObjects = (oldData: object, newData: object) => {
-  const changed = {};
-  const unchanged = {};
-  const oldNames = oldData ? Object.getOwnPropertyNames(oldData) : [];
-  const newNames = newData ? Object.getOwnPropertyNames(newData) : [];
+export const compareObjects = (oldData: object = {}, newData: object = {}) => {
+  const changedFields = {};
+  const unchangedFields = {};
+  const addedFields = {};
+  const removedFields = {};
+  // exclude field names not stored in db
+  const nonSchemaNames = ['uid', 'length'];
+  let fieldNames: string[] = [];
 
-  if (oldData && newData) {
-    // gather unchanged fields first
-    for (const name of oldNames) {
-      const oldField = oldData[name];
-      const newField = newData[name];
-
-      if (typeof oldField !== 'object') {
-        if (oldField === newField) {
-          unchanged[name] = oldField;
-        }
-      } else {
-        if (!Array.isArray(oldField)) {
-          const comparison = compareObjects(oldField, newField);
-
-          unchanged[name] = comparison.unchanged;
-        } else {
-          const comparison = compareArrays(oldField, newField);
-
-          unchanged[name] = comparison.unchanged;
-        }
+  if (newData && !isObjectEmpty(newData)) {
+    fieldNames = Object.getOwnPropertyNames(newData);
+    // split
+    fieldNames = fieldNames.map<string>(n => {
+      if (!nonSchemaNames.includes(n)) {
+        return n;
       }
-    } // end old data for loop
-
-    // and then changed fields
-    for (const name of newNames) {
-      const oldField = oldData[name];
-      const newField = newData[name];
-
-      if (typeof newField !== 'object') {
-        if (oldField !== newField) {
-          changed[name] = newField;
-        }
-      } else {
-        if (!Array.isArray(newField)) {
-          const comparison = compareObjects(oldField, newField);
-
-          changed[name] = comparison.changed;
-        } else {
-          const comparison = compareArrays(oldField, newField);
-
-          changed[name] = comparison.changed;
-        }
-      }
-    } // end new data for loop
+    });
   }
 
-  return { changed, unchanged };
+  for (const name of fieldNames) {
+    const oldField = oldData[name];
+    const newField = newData[name];
+
+    if (typeof newField !== 'object') {
+      // changed fields
+      if (oldField !== newField) {
+        changedFields[name] = newField;
+
+        // means removed a field
+        if (!isNull(oldField) && isNull(newField)) {
+          removedFields[name] = oldField;
+        }
+
+        // means added a new field
+        if (isNull(oldField) && !isNull(newField)) {
+          addedFields[name] = newField;
+        }
+      }
+
+      // unchanged fields
+      if (oldField === newField) {
+        unchangedFields[name] = newField;
+      }
+    } // end primary type comparison
+
+    if (Array.isArray(newField)) {
+      const comparison = compareArrays(oldField, newField);
+      const { changed, unchanged, added, removed } = comparison;
+
+      if (changed.length > 0) {
+        changedFields[name] = changed;
+      }
+      if (added.length > 0) {
+        addedFields[name] = added;
+      }
+      if (removed.length > 0) {
+        removedFields[name] = removed;
+      }
+      if (unchanged.length > 0) {
+        unchangedFields[name] = unchanged;
+      }
+    } // end array comparison
+
+    if (typeof newField === 'object') {
+      const comparison = compareObjects(oldField, newField);
+      const { changed, added, removed, unchanged } = comparison;
+
+      if (!isObjectEmpty(changed)) {
+        changedFields[name] = changed;
+      }
+      if (!isObjectEmpty(added)) {
+        addedFields[name] = added;
+      }
+      if (!isObjectEmpty(removed)) {
+        removedFields[name] = removed;
+      }
+      if (!isObjectEmpty(unchanged)) {
+        unchangedFields[name] = unchanged;
+      }
+    }
+  } // end old data for loop
+
+  return {
+    changed: changedFields,
+    unchanged: unchangedFields,
+    added: addedFields,
+    removed: removedFields,
+  };
 };

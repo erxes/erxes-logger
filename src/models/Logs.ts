@@ -10,8 +10,11 @@ export interface ILogDoc {
   unicode?: string;
   description?: string;
   newData?: string;
-  oldData?: string;
   objectId?: string;
+  addedData?: string;
+  changedData?: string;
+  unchangedData?: string;
+  removedData?: string;
 }
 
 export interface ILogDocument extends ILogDoc, Document {}
@@ -36,36 +39,59 @@ export const schema = new Schema({
     type: String,
     label: 'Action, one of (create|update|delete)',
   }),
-  oldData: field({ type: String, label: 'Unchanged fields', optional: true }),
-  newData: field({ type: String, label: 'Changed fields', optional: true }),
   objectId: field({ type: String, label: 'Collection row id' }),
   unicode: field({ type: String, label: 'Performer username' }),
   description: field({ type: String, label: 'Description' }),
+  addedData: field({ type: String, label: 'Newly added fields', optional: true }),
+  unchangedData: field({ type: String, label: 'Unchanged fields', optional: true }),
+  changedData: field({ type: String, label: 'Changed fields', optional: true }),
+  removedData: field({ type: String, label: 'Removed fields', optional: true }),
 });
 
 export const loadLogClass = () => {
   class Log {
     public static createLog(doc: ILogDoc) {
       const { object, newData } = doc;
-      const oldData = JSON.parse(object);
       const logDoc = { ...doc };
+      let oldData;
+      let parsedNewData;
+
+      try {
+        oldData = JSON.parse(object);
+
+        if (newData) {
+          parsedNewData = JSON.parse(newData);
+        }
+      } catch (e) {
+        console.log(e, 'JSON parsing error');
+        oldData = JSON.parse(object.replace('\n', ''));
+      }
 
       if (oldData._id) {
         logDoc.objectId = oldData._id;
       }
 
       switch (doc.action) {
+        case 'create':
+          logDoc.addedData = JSON.stringify(parsedNewData);
+          break;
         case 'update':
           if (oldData && newData) {
-            const comparison = compareObjects(oldData, JSON.parse(newData));
+            try {
+              const comparison = compareObjects(oldData, parsedNewData);
 
-            logDoc.oldData = JSON.stringify(comparison.unchanged);
-            logDoc.newData = JSON.stringify(comparison.changed);
+              logDoc.addedData = JSON.stringify(comparison.added);
+              logDoc.changedData = JSON.stringify(comparison.changed);
+              logDoc.unchangedData = JSON.stringify(comparison.unchanged);
+              logDoc.removedData = JSON.stringify(comparison.removed);
+            } catch (e) {
+              console.log(e, 'object comparison error');
+            }
           }
 
           break;
         case 'delete':
-          logDoc.oldData = JSON.stringify(oldData);
+          logDoc.removedData = JSON.stringify(oldData);
           break;
         default:
           break;
