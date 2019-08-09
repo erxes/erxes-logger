@@ -9,6 +9,7 @@ export interface ILogDoc {
   object?: string;
   unicode?: string;
   description?: string;
+  oldData?: string;
   newData?: string;
   objectId?: string;
   addedData?: string;
@@ -42,6 +43,10 @@ export const schema = new Schema({
   objectId: field({ type: String, label: 'Collection row id' }),
   unicode: field({ type: String, label: 'Performer username' }),
   description: field({ type: String, label: 'Description' }),
+  // restore db from these if disaster happens
+  oldData: field({ type: String, label: 'Data before changes', optional: true }),
+  newData: field({ type: String, label: 'Data to be changed', optional: true }),
+  // processed data to show in front side
   addedData: field({ type: String, label: 'Newly added fields', optional: true }),
   unchangedData: field({ type: String, label: 'Unchanged fields', optional: true }),
   changedData: field({ type: String, label: 'Changed fields', optional: true }),
@@ -80,6 +85,11 @@ export const loadLogClass = () => {
             try {
               const comparison = compareObjects(oldData, parsedNewData);
 
+              // store exactly how it was for safety purpose
+              logDoc.oldData = JSON.stringify(oldData);
+              // it comes as string already
+              logDoc.newData = newData;
+
               logDoc.addedData = JSON.stringify(comparison.added);
               logDoc.changedData = JSON.stringify(comparison.changed);
               logDoc.unchangedData = JSON.stringify(comparison.unchanged);
@@ -91,6 +101,7 @@ export const loadLogClass = () => {
 
           break;
         case 'delete':
+          logDoc.oldData = JSON.stringify(oldData);
           logDoc.removedData = JSON.stringify(oldData);
           break;
         default:
