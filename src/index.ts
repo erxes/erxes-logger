@@ -57,10 +57,12 @@ app.get('/logs', async (req, res) => {
     createdAt?: any;
     createdBy?: string;
     action?: string;
+    type?: string;
+    description?: object;
   }
 
   const params = JSON.parse(req.body.params);
-  const { start, end, userId, action, page, perPage } = params;
+  const { start, end, userId, action, page, perPage, type, desc } = params;
   const filter: IFilter = {};
 
   // filter by date
@@ -80,6 +82,16 @@ app.get('/logs', async (req, res) => {
   // filter by actions
   if (action) {
     filter.action = action;
+  }
+
+  // filter by module
+  if (type) {
+    filter.type = type;
+  }
+
+  // filter by description text
+  if (desc) {
+    filter.description = { $regex: desc, $options: '$i' };
   }
 
   const _page = Number(page || '1');
