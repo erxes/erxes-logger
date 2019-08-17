@@ -37,7 +37,7 @@ const compareArrays = (oldArray: any[] = [], newArray: any[] = []) => {
     if (typeof elem !== 'object') {
       const found = newArray.find(el => el === elem);
 
-      if (!found) {
+      if (!found && elem) {
         removedItems.push(elem);
       }
     }
@@ -50,7 +50,10 @@ const compareArrays = (oldArray: any[] = [], newArray: any[] = []) => {
 
       if (found) {
         unchangedItems.push(elem);
-      } else {
+      }
+
+      // means an element has been added
+      if (!found && elem) {
         addedItems.push(elem);
       }
     }
@@ -97,6 +100,43 @@ const isNull = val => val === null || val === undefined || val === '';
  */
 const isObjectEmpty = obj => {
   return typeof obj === 'object' && obj && Object.keys(obj).length === 0 && obj.constructor === Object;
+};
+
+/**
+ * Removes null, undefined attributes from given object one level down.
+ * @param {Object} obj Object to check
+ * @returns {Object} Flattened object
+ */
+const flattenObject = (obj = {}) => {
+  const flatObject = { ...obj };
+  const names = obj ? Object.getOwnPropertyNames(obj) : [];
+
+  for (const name of names) {
+    const attr = obj[name];
+    let empty = false;
+
+    if (typeof attr !== 'object') {
+      if (isNull(attr)) {
+        empty = true;
+      }
+    }
+
+    if (Array.isArray(attr) && attr.length === 0) {
+      empty = true;
+    }
+
+    if (typeof attr === 'object' && !Array.isArray(attr)) {
+      if (isObjectEmpty(attr)) {
+        empty = true;
+      }
+    }
+
+    if (empty) {
+      delete flatObject[name];
+    }
+  } // end for loop
+
+  return flatObject;
 };
 
 /**
@@ -169,23 +209,23 @@ export const compareObjects = (oldData: object = {}, newData: object = {}) => {
       }
     } // end array comparison
 
-    if (typeof newField === 'object') {
+    if (typeof newField === 'object' && !Array.isArray(newField)) {
       const comparison = compareObjects(oldField, newField);
       const { changed, added, removed, unchanged } = comparison;
 
       if (!isObjectEmpty(changed)) {
-        changedFields[name] = changed;
+        changedFields[name] = flattenObject(changed);
       }
       if (!isObjectEmpty(added)) {
-        addedFields[name] = added;
+        addedFields[name] = flattenObject(added);
       }
       if (!isObjectEmpty(removed)) {
-        removedFields[name] = removed;
+        removedFields[name] = flattenObject(removed);
       }
       if (!isObjectEmpty(unchanged)) {
-        unchangedFields[name] = unchanged;
+        unchangedFields[name] = flattenObject(unchanged);
       }
-    }
+    } // end regular object comparison
   } // end old data for loop
 
   return {
