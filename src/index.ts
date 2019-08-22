@@ -1,7 +1,7 @@
 import * as bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
-import * as xss from 'xss';
+import {filterXSS} from 'xss';
 
 // load environment variables
 dotenv.config();
