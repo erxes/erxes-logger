@@ -1,6 +1,7 @@
 import * as bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
+import {filterXSS} from 'xss';
 
 // load environment variables
 dotenv.config();
@@ -13,6 +14,7 @@ connect();
 
 const app = express();
 
+app.disable('x-powered-by');
 app.use((req: any, _res, next) => {
   req.rawBody = '';
 
@@ -47,7 +49,7 @@ app.post('/logs/create', async (req, res) => {
 
     return res.json({ status: 'ok' });
   } catch (e) {
-    return res.status(500).send(e.message);
+    return res.status(500).send(filterXSS(e.message));
   }
 });
 
@@ -95,7 +97,7 @@ app.get('/logs', async (req, res) => {
 
     return res.json({ logs, totalCount: logsCount });
   } catch (e) {
-    return res.status(500).send(e.message);
+    return res.status(500).send(filterXSS(e.message));
   }
 });
 
@@ -107,7 +109,7 @@ app.get('/status', async (_req, res) => {
 // Error handling middleware
 app.use((error, _req, res, _next) => {
   console.error(error.stack);
-  res.status(500).send(error.message);
+  res.status(500).send(filterXSS(error.message));
 });
 
 const { PORT } = process.env;
