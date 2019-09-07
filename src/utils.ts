@@ -210,20 +210,31 @@ export const compareObjects = (oldData: object = {}, newData: object = {}) => {
     } // end array comparison
 
     if (typeof newField === 'object' && !Array.isArray(newField)) {
-      const comparison = compareObjects(oldField, newField);
-      const { changed, added, removed, unchanged } = comparison;
+      // compare deeply when only both fields have values
+      if (newField && oldField) {
+        const comparison = compareObjects(oldField, newField);
+        const { changed, added, removed, unchanged } = comparison;
 
-      if (!isObjectEmpty(changed)) {
-        changedFields[name] = flattenObject(changed);
+        if (!isObjectEmpty(changed)) {
+          changedFields[name] = flattenObject(changed);
+        }
+        if (!isObjectEmpty(added)) {
+          addedFields[name] = flattenObject(added);
+        }
+        if (!isObjectEmpty(removed)) {
+          removedFields[name] = flattenObject(removed);
+        }
+        if (!isObjectEmpty(unchanged)) {
+          unchangedFields[name] = flattenObject(unchanged);
+        }
+      } // end both field checking
+
+      if (!oldField && newField) {
+        addedFields[name] = newField;
       }
-      if (!isObjectEmpty(added)) {
-        addedFields[name] = flattenObject(added);
-      }
-      if (!isObjectEmpty(removed)) {
-        removedFields[name] = flattenObject(removed);
-      }
-      if (!isObjectEmpty(unchanged)) {
-        unchangedFields[name] = flattenObject(unchanged);
+
+      if (oldField && !newField) {
+        removedFields[name] = oldField;
       }
     } // end regular object comparison
   } // end old data for loop
