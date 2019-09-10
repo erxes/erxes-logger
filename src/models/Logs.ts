@@ -16,6 +16,7 @@ export interface ILogDoc {
   changedData?: string;
   unchangedData?: string;
   removedData?: string;
+  extraDesc?: string;
 }
 
 export interface ILogDocument extends ILogDoc, Document {}
@@ -51,6 +52,7 @@ export const schema = new Schema({
   unchangedData: field({ type: String, label: 'Unchanged fields', optional: true }),
   changedData: field({ type: String, label: 'Changed fields', optional: true }),
   removedData: field({ type: String, label: 'Removed fields', optional: true }),
+  extraDesc: field({ type: String, label: 'Extra description', optional: true }),
 });
 
 export const loadLogClass = () => {
