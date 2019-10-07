@@ -25,13 +25,17 @@ export const field = options => {
  * @param oldArray Old array
  * @param newArray New array
  * @returns Object specifying changed & unchanged fields
- * @todo Add object array comparison part
+ * @todo Improve object array comparison part
  */
 const compareArrays = (oldArray: any[] = [], newArray: any[] = []) => {
   const changedItems = [];
   const unchangedItems = [];
   const addedItems = [];
-  const removedItems = [];
+  let removedItems = [];
+
+  if (newArray.length === 0) {
+    removedItems = oldArray;
+  }
 
   for (const elem of oldArray) {
     if (typeof elem !== 'object') {
