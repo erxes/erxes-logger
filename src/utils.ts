@@ -33,7 +33,7 @@ const compareArrays = (oldArray: any[] = [], newArray: any[] = []) => {
   const addedItems = [];
   let removedItems = [];
 
-  if (newArray.length === 0) {
+  if (oldArray.length > 0 && newArray.length === 0) {
     removedItems = oldArray;
   }
 
@@ -41,7 +41,11 @@ const compareArrays = (oldArray: any[] = [], newArray: any[] = []) => {
     if (typeof elem !== 'object') {
       const found = newArray.find(el => el === elem);
 
-      if (!found && elem) {
+      /**
+       * If removedItems contains the pushing value, then it caused the following error
+       * FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory
+       */
+      if (!found && elem && !removedItems.includes(elem)) {
         removedItems.push(elem);
       }
     }
