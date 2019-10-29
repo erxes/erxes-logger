@@ -6,7 +6,7 @@ import * as express from 'express';
 dotenv.config();
 
 import { connect } from './connection';
-import { debugInit, debugLogs, debugRequest } from './debuggers';
+import { debugExternalRequests, debugInit, debugRequest } from './debuggers';
 import Logs from './models/Logs';
 
 connect();
@@ -28,7 +28,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // create new log entry
 app.post('/logs/create', async (req, res) => {
-  debugRequest(debugLogs, req);
+  debugRequest(debugExternalRequests, req);
 
   const params = JSON.parse(req.body.params);
   const { createdBy, type, action, unicode, description, object, newData } = params;
@@ -97,6 +97,11 @@ app.get('/logs', async (req, res) => {
   } catch (e) {
     return res.status(500).send(e.message);
   }
+});
+
+// for health checking
+app.get('/status', async (_req, res) => {
+  res.end('ok');
 });
 
 // Error handling middleware

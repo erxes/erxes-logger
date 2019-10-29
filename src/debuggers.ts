@@ -1,10 +1,13 @@
 import * as debug from 'debug';
+import * as dotenv from 'dotenv';
 
-export const debugInit = debug('erxes-logs:init');
-export const debugDb = debug('erxes-logs:db');
-export const debugBase = debug('erxes-logs:base');
-export const debugLogs = debug('erxes-logs:logs');
-export const debugExternalRequests = debug('erxes-logs:external-requests');
+dotenv.config();
+
+const debugPrefix = process.env.DEBUG_PREFIX;
+
+export const debugInit = debug(`${debugPrefix}:init`);
+export const debugDb = debug(`${debugPrefix}:db`);
+export const debugExternalRequests = debug(`${debugPrefix}:external-requests`);
 
 export const debugRequest = (debugInstance, req) =>
   debugInstance(`
@@ -12,6 +15,3 @@ export const debugRequest = (debugInstance, req) =>
         body: ${JSON.stringify(req.body || {})}
         queryParams: ${JSON.stringify(req.query)}
     `);
-
-export const debugResponse = (debugInstance, req, data = 'success') =>
-  debugInstance(`Responding ${req.path} request to ${req.headers.origin} with ${data}`);
