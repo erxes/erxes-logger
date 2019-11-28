@@ -1,6 +1,6 @@
 {
   "name": "erxes-logger",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Logger module for erxes",
   "homepage": "https://erxes.io",
   "repository": {
@@ -36,8 +36,7 @@
     "debug": "^4.1.1",
     "dotenv": "^4.0.0",
     "express": "^4.16.4",
-    "meteor-random": "^0.0.3",
-    "mongoose": "^5.2.16",
+    "mongoose": "5.7.10",
     "requestify": "^0.2.5"
   },
   "devDependencies": {
@@ -56,7 +55,8 @@
     "jest": "22.0.4",
     "lint-staged": "^3.6.0",
     "prettier": "^1.13.7",
-    "release-it": "^12.3.5",
+    "release-it": "^12.4.3",
+    "snyk": "^1.239.5",
     "ts-jest": "22.0.4",
     "ts-node": "^7.0.0",
     "ts-node-dev": "^1.0.0-pre.32",

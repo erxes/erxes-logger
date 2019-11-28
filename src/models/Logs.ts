@@ -26,7 +26,6 @@ export interface ILogModel extends Model<ILogDocument> {
 }
 
 export const schema = new Schema({
-  _id: field({ pkey: true }),
   createdAt: field({
     type: Date,
     label: 'Created date',
