@@ -1,24 +1,5 @@
-import * as Random from 'meteor-random';
-
-/**
- * Mongoose field options wrapper
- * @param {Object} options Mongoose schema options
- */
-export const field = options => {
-  const { pkey, type, optional } = options;
-
-  if (type === String && !pkey && !optional) {
-    options.validate = /\S+/;
-  }
-
-  // TODO: remove
-  if (pkey) {
-    options.type = String;
-    options.default = () => Random.id();
-  }
-
-  return options;
-};
+import { debugBase } from './debuggers';
+import Logs from './models/Logs';
 
 /**
  * Takes 2 arrays and detect changes between them.
@@ -253,4 +234,22 @@ export const compareObjects = (oldData: object = {}, newData: object = {}) => {
     added: addedFields,
     removed: removedFields,
   };
+};
+
+export const receivePutLogCommand = async params => {
+  debugBase(params);
+
+  const { createdBy, type, action, unicode, description, object, newData, extraDesc } = params;
+
+  return Logs.createLog({
+    createdBy,
+    type,
+    action,
+    object,
+    newData,
+    unicode,
+    createdAt: new Date(),
+    description,
+    extraDesc,
+  });
 };
