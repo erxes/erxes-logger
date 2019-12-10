@@ -17,7 +17,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node dist",
-    "dev": "DEBUG=ot-logs:* node_modules/.bin/ts-node-dev --respawn src",
+    "dev": "DEBUG=erxes-logger:* node_modules/.bin/ts-node-dev --respawn src",
     "test": "NODE_ENV=test jest --runInBand --forceExit",
     "build": "tsc -p tsconfig.prod.json",
     "lint": "tslint 'src/**/*.ts'",
@@ -32,6 +32,7 @@
     ]
   },
   "dependencies": {
+    "amqplib": "^0.5.5",
     "body-parser": "^1.17.1",
     "debug": "^4.1.1",
     "dotenv": "^4.0.0",

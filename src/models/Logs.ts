@@ -1,5 +1,19 @@
 import { Document, model, Model, Schema } from 'mongoose';
-import { compareObjects, field } from '../utils';
+import { compareObjects } from '../utils';
+
+/**
+ * Mongoose field options wrapper
+ * @param {Object} options Mongoose schema options
+ */
+export const field = options => {
+  const { type, optional } = options;
+
+  if (type === String && !optional) {
+    options.validate = /\S+/;
+  }
+
+  return options;
+};
 
 export interface ILogDoc {
   createdAt: Date;
@@ -29,6 +43,7 @@ export const schema = new Schema({
   createdAt: field({
     type: Date,
     label: 'Created date',
+    index: true,
     default: new Date(),
   }),
   createdBy: field({ type: String, label: 'Performer of the action' }),

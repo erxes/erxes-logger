@@ -6,7 +6,8 @@ import * as express from 'express';
 dotenv.config();
 
 import { connect } from './connection';
-import { debugExternalRequests, debugInit, debugRequest } from './debuggers';
+import { debugInit } from './debuggers';
+import './messageBroker';
 import Logs from './models/Logs';
 
 connect();
@@ -25,32 +26,6 @@ app.use((req: any, _res, next) => {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// create new log entry
-app.post('/logs/create', async (req, res) => {
-  debugRequest(debugExternalRequests, req);
-
-  const params = JSON.parse(req.body.params);
-  const { createdBy, type, action, unicode, description, object, newData, extraDesc } = params;
-
-  try {
-    await Logs.createLog({
-      createdBy,
-      type,
-      action,
-      object,
-      newData,
-      unicode,
-      createdAt: new Date(),
-      description,
-      extraDesc,
-    });
-
-    return res.json({ status: 'ok' });
-  } catch (e) {
-    return res.status(500).send(e.message);
-  }
-});
 
 // sends logs according to specified filter
 app.get('/logs', async (req, res) => {

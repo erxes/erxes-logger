@@ -3,11 +3,10 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const debugPrefix = process.env.DEBUG_PREFIX;
-
-export const debugInit = debug(`${debugPrefix}:init`);
-export const debugDb = debug(`${debugPrefix}:db`);
-export const debugExternalRequests = debug(`${debugPrefix}:external-requests`);
+export const debugInit = debug('erxes-logger:init');
+export const debugDb = debug('erxes-logger:db');
+export const debugBase = debug('erxes-logger:base');
+export const debugExternalRequests = debug('erxes-logger:external-requests');
 
 export const debugRequest = (debugInstance, req) =>
   debugInstance(`
