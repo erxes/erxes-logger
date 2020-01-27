@@ -23,7 +23,7 @@
   "addons": [
     {
       "plan": "mongolab:sandbox",
-      "as": "MONGO"
+      "as": "MONGO_LOGGER"
     }
   ],
   "buildpacks": [
