@@ -19,6 +19,7 @@ export interface ILogDoc {
   createdAt: Date;
   createdBy: string;
   type: string;
+  ipAddress?: string;
   action: string;
   object?: string;
   unicode?: string;
@@ -55,6 +56,7 @@ export const schema = new Schema({
     type: String,
     label: 'Action, one of (create|update|delete)',
   }),
+  ipAddress: field({ type: String, optional: true, label: 'IP address' }),
   objectId: field({ type: String, label: 'Collection row id' }),
   unicode: field({ type: String, label: 'Performer username' }),
   description: field({ type: String, label: 'Description' }),
