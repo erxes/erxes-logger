@@ -17,13 +17,14 @@
   "license": "MIT",
   "scripts": {
     "start": "node dist",
-    "dev": "DEBUG=erxes-logs:* node_modules/.bin/ts-node-dev --respawn src",
+    "dev": "DEBUG=erxes-logger:* node_modules/.bin/ts-node-dev --respawn src",
     "test": "NODE_ENV=test jest --runInBand --forceExit",
     "build": "tsc -p tsconfig.prod.json",
     "lint": "tslint 'src/**/*.ts'",
     "format": "prettier --write 'src/**/*.ts'",
     "precommit": "lint-staged",
-    "release": "release-it"
+    "release": "release-it",
+    "migrate": "NODE_ENV=command migrate --migrations-dir='./dist/migrations' --store='./db-migrate-store.js' up"
   },
   "lint-staged": {
     "*.ts": [
@@ -32,6 +33,7 @@
     ]
   },
   "dependencies": {
+    "amqplib": "^0.5.5",
     "body-parser": "^1.17.1",
     "debug": "^4.1.1",
     "dotenv": "^4.0.0",
@@ -54,6 +56,7 @@
     "husky": "^0.13.4",
     "jest": "22.0.4",
     "lint-staged": "^3.6.0",
+    "migrate": "^1.6.2",
     "prettier": "^1.13.7",
     "release-it": "^12.4.3",
     "snyk": "^1.239.5",
